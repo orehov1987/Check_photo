@@ -7,14 +7,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
-
-//import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
-//import android.util.Base64;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,15 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-//import org.w3c.dom.Document;
-//import org.w3c.dom.Element;
-//import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-
-public class Login extends AppCompatActivity/* implements LoaderCallbacks<Cursor>*/ {
-
-    //private UserLoginTask mAuthTask = null;
+public class Login extends AppCompatActivity {
 
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -41,26 +30,12 @@ public class Login extends AppCompatActivity/* implements LoaderCallbacks<Cursor
 
     public static String LOG_TAG = "my_log";
 
-    /*public static ArrayList<RowBrowser> getListBrowser() {
-        return listBrowser;
-    }
-
-    static ArrayList<RowBrowser> listBrowser;*/
-
-
-
-
-
+    private BroadcastReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-
-
-        //listBrowser = new ArrayList<>();
-
-
 
         mEmailView = findViewById(R.id.email);
 
@@ -90,15 +65,14 @@ public class Login extends AppCompatActivity/* implements LoaderCallbacks<Cursor
 
 
 
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+        receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                //String someValue = intent.getStringExtra("someName");
-                // ... do something ...
 
                 showProgress(false);
+                Log.d(LOG_TAG,  "url in login onreceive " + getIntent().getStringExtra("url"));
                 intent = new Intent(Login.this, Main.class);
-                //intent.putExtra("base64login", base64login);
+                intent.putExtra("url", App.STARTURL);
                 startActivity(intent);//открываем новую активность
                 finish();
             }
@@ -110,7 +84,7 @@ public class Login extends AppCompatActivity/* implements LoaderCallbacks<Cursor
 
     private void attemptLogin() {
         //if (mAuthTask != null) {
-        //   return;
+         //   return;
         //}
 
         // Reset errors.
@@ -132,7 +106,7 @@ public class Login extends AppCompatActivity/* implements LoaderCallbacks<Cursor
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            startService(new Intent(this, DownloadIntentService.class).putExtra("url", App.URL));
+            startService(new Intent(this, DownloadIntentService.class).putExtra("url", App.STARTURL));
             //mAuthTask = new UserLoginTask(email, password);
             //mAuthTask.execute((Void) null);
         }
@@ -174,47 +148,10 @@ public class Login extends AppCompatActivity/* implements LoaderCallbacks<Cursor
         }
     }
 
-    /*public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-
-            //String login = App.USERNAME + ":" + App.PASSWORD;
-            //String base64login = new String(Base64.encode(login.getBytes(), Base64.DEFAULT));
-
-            HtmlParser htmlParser = new HtmlParser(App.URL);
-            return htmlParser.getParseHtml();
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean base64login) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (base64login) {
-                Intent intent = new Intent(Login.this, Main.class);
-                //intent.putExtra("base64login", base64login);
-                startActivity(intent);//открываем новую активность
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
-    }*/
+    @Override
+    public void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onDestroy();
+    }
 }
 
